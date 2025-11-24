@@ -1,0 +1,49 @@
+---
+- name: Include OS-specific variables
+  include_vars: "{{ ansible_os_family }}.yml"
+  tags: always
+
+- name: Check if running on Linux
+  fail:
+    msg: "This role only supports Linux systems"
+  when: ansible_system != "Linux"
+
+- name: Check minimum RAM requirement
+  fail:
+    msg: "Minimum 2GB RAM required. Current: {{ ansible_memtotal_mb }}MB"
+  when: ansible_memtotal_mb < 2000
+
+- name: Check disk space
+  shell: df -BG {{ safetyscan_install_dir | dirname }} | tail -1 | awk '{print $4}' | sed 's/G//'
+  register: available_space
+  changed_when: false
+  failed_when: false
+
+- name: Verify sufficient disk space
+  fail:
+    msg: "Minimum 5GB free space required. Current: {{ available_space.stdout }}GB"
+  when:
+  - available_space.stdout is defined
+  - available_space.stdout | int < 5
+
+- name: Validate project configurations
+  fail:
+    msg: "Project '{{ item.name }}' requires 'start_cmd' and 'port' when mode is 'dast' or 'both'"
+  loop: "{{ safetyscan_projects }}"
+  when:
+  - item.mode in ['dast', 'both']
+  - item.start_cmd is not defined or item.port is not defined
+
+- name: Create log directory
+  file:
+    path: "{{ safetyscan_log_file | dirname }}"
+    state: directory
+    mode: '0755'
+
+- name: Create report base directory
+  file:
+    path: "{{ safetyscan_report_base_dir }}"
+    state: directory
+    owner: "{{ safetyscan_report_owner }}"
+    group: "{{ safetyscan_report_group }}"
+    mode: "{{ safetyscan_report_mode }}"

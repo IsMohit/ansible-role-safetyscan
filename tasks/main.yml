@@ -1,2 +1,49 @@
 ---
-# tasks file for ansible-role-safetyscan
+- name: Run preflight checks
+  include_tasks: preflight.yml
+  tags:
+  - always
+
+- name: Install Docker
+  include_tasks: install-docker.yml
+  when: safetyscan_install_docker | bool
+  tags:
+  - docker
+  - install
+
+- name: Install Python
+  include_tasks: install-python.yml
+  when: safetyscan_install_python | bool
+  tags:
+  - python
+  - install
+
+- name: Install SafetyScan
+  include_tasks: install-safetyscan.yml
+  tags:
+  - safetyscan
+  - install
+
+- name: Run immediate scans
+  include_tasks: run-scan.yml
+  when:
+  - safetyscan_run_immediately | bool
+  - safetyscan_projects | length > 0
+  tags:
+  - scan
+  - immediate
+
+- name: Configure scheduled scans
+  include_tasks: configure-cron.yml
+  when:
+  - safetyscan_projects | length > 0
+  - safetyscan_projects | selectattr('schedule', 'defined') | list | length > 0
+  tags:
+  - cron
+  - schedule
+
+- name: Configure notifications
+  include_tasks: configure-notifications.yml
+  when: safetyscan_enable_notifications | bool
+  tags:
+  - notifications

@@ -1,0 +1,53 @@
+---
+- name: Check if SafetyScan is already installed
+  stat:
+    path: "{{ safetyscan_install_dir }}"
+  register: safetyscan_dir
+
+- name: Clone SafetyScan repository
+  git:
+    repo: "{{ safetyscan_repo_url }}"
+    dest: "{{ safetyscan_install_dir }}"
+    version: "{{ safetyscan_version }}"
+    force: yes
+  when: not safetyscan_dir.stat.exists or safetyscan_version != "main"
+
+- name: Update SafetyScan repository
+  git:
+    repo: "{{ safetyscan_repo_url }}"
+    dest: "{{ safetyscan_install_dir }}"
+    version: "{{ safetyscan_version }}"
+    update: yes
+  when: safetyscan_dir.stat.exists
+
+- name: Make SafetyScan scripts executable
+  file:
+    path: "{{ safetyscan_install_dir }}/{{ item }}"
+    mode: '0755'
+  loop:
+  - safetyscan.sh
+  - report_generator.py
+
+- name: Copy safetyscan.sh to bin directory
+  copy:
+    src: "{{ safetyscan_install_dir }}/safetyscan.sh"
+    dest: "{{ safetyscan_bin_dir }}/safetyscan"
+    mode: '0755'
+    remote_src: yes
+
+- name: Copy report_generator.py to bin directory
+  copy:
+    src: "{{ safetyscan_install_dir }}/report_generator.py"
+    dest: "{{ safetyscan_bin_dir }}/safetyscan-report-generator"
+    mode: '0755'
+    remote_src: yes
+
+- name: Verify SafetyScan installation
+  command: "{{ safetyscan_bin_dir }}/safetyscan --help"
+  register: safetyscan_help
+  changed_when: false
+  failed_when: safetyscan_help.rc != 0
+
+- name: Display SafetyScan installation success
+  debug:
+    msg: "SafetyScan successfully installed at {{ safetyscan_bin_dir }}/safetyscan"

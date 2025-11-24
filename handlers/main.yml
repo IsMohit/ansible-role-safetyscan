@@ -1,2 +1,17 @@
 ---
-# handlers file for ansible-role-safetyscan
+- name: restart docker
+  systemd:
+    name: docker
+    state: restarted
+
+- name: reload cron
+  systemd:
+    name: cron
+    state: reloaded
+  when: ansible_os_family == "Debian"
+
+- name: reload crond
+  systemd:
+    name: crond
+    state: reloaded
+  when: ansible_os_family == "RedHat"

@@ -1,0 +1,14 @@
+---
+# Arch Linux specific variables
+python_package: "python"
+python_pip_package: "python-pip"
+jq_package: "jq"
+git_package: "git"
+curl_package: "curl"
+
+required_packages:
+- "{{ python_package }}"
+- "{{ git_package }}"
+- "{{ curl_package }}"
+
+docker_package: "docker"

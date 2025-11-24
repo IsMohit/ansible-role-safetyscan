@@ -1,2 +1,57 @@
 ---
-# defaults file for ansible-role-safetyscan
+# Installation settings
+safetyscan_version: "main" # Git branch or tag
+safetyscan_repo_url: "https://github.com/IsMohit/SafetyScan-Automated-Security-Scanning-Tool-for-Linux.git"
+safetyscan_install_dir: "/opt/safetyscan"
+safetyscan_bin_dir: "/usr/local/bin"
+
+# Component installation
+safetyscan_install_docker: true
+safetyscan_install_python: true
+safetyscan_install_jq: true
+
+# Immediate execution
+safetyscan_run_immediately: false # Set to true to run scans right after installation
+
+# Projects to scan
+safetyscan_projects: []
+# Example:
+# safetyscan_projects:
+#   - name: "my-webapp"
+#     path: "/var/www/myapp"
+#     mode: "both"  # sast, dast, or both
+#     start_cmd: "npm start"  # Required for dast/both
+#     port: 3000  # Required for dast/both
+#     schedule: "0 2 * * *"  # Optional: cron schedule
+#     enabled: true  # Optional: default true
+
+# Report settings
+safetyscan_report_base_dir: "/var/log/safetyscan"
+safetyscan_report_retention_days: 30
+safetyscan_report_owner: "root"
+safetyscan_report_group: "root"
+safetyscan_report_mode: "0755"
+
+# Notification settings (all optional)
+safetyscan_enable_notifications: false
+safetyscan_notification_email: ""
+safetyscan_notification_slack_webhook: ""
+safetyscan_notification_on_success: false # Only notify on failures by default
+safetyscan_notification_on_failure: true
+
+# Scan behavior
+safetyscan_scan_timeout: 3600 # 1 hour
+safetyscan_concurrent_scans: false # Run scans sequentially by default
+
+# Docker settings (when safetyscan_install_docker: true)
+docker_users:
+- "{{ ansible_user | default('root') }}"
+docker_daemon_options: {}
+
+# Cleanup settings
+safetyscan_cleanup_old_reports: true
+safetyscan_cleanup_docker_images: false
+
+# Logging
+safetyscan_log_file: "/var/log/safetyscan/ansible-role.log"
+safetyscan_log_level: "INFO" # DEBUG, INFO, WARNING, ERROR

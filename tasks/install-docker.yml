@@ -1,0 +1,76 @@
+---
+- name: Install Docker (Debian/Ubuntu)
+  block:
+  - name: Install required packages
+    apt:
+      name: "{{ required_packages }}"
+      state: present
+      update_cache: yes
+
+  - name: Add Docker GPG key
+    apt_key:
+      url: "{{ docker_apt_key_url }}"
+      state: present
+
+  - name: Add Docker repository
+    apt_repository:
+      repo: "{{ docker_apt_repo }}"
+      state: present
+      filename: docker
+
+  - name: Install Docker packages
+    apt:
+      name: "{{ docker_packages }}"
+      state: present
+      update_cache: yes
+  when: ansible_os_family == "Debian"
+
+- name: Install Docker (RedHat/CentOS/Fedora)
+  block:
+  - name: Install required packages
+    yum:
+      name: "{{ required_packages }}"
+      state: present
+
+  - name: Add Docker repository
+    get_url:
+      url: "{{ docker_yum_repo_url }}"
+      dest: /etc/yum.repos.d/docker-ce.repo
+      mode: '0644'
+
+  - name: Install Docker packages
+    yum:
+      name: "{{ docker_packages }}"
+      state: present
+  when: ansible_os_family == "RedHat"
+
+- name: Install Docker (Arch Linux)
+  block:
+  - name: Install Docker package
+    pacman:
+      name: "{{ docker_package }}"
+      state: present
+  when: ansible_os_family == "Archlinux"
+
+- name: Start and enable Docker service
+  systemd:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Add users to docker group
+  user:
+    name: "{{ item }}"
+    groups: docker
+    append: yes
+  loop: "{{ docker_users }}"
+  when: docker_users is defined
+
+- name: Verify Docker installation
+  command: docker --version
+  register: docker_version
+  changed_when: false
+
+- name: Display Docker version
+  debug:
+    msg: "Docker installed: {{ docker_version.stdout }}"
