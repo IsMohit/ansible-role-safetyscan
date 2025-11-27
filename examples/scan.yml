@@ -1,0 +1,117 @@
+---
+# Example playbooks to run scans after installation
+
+# Example 1: Simple SAST scan
+- name: Run SAST Scan
+  hosts: webservers
+  become: yes  # If become_user = root in ansible.cfg then change become: no
+ 
+  vars:
+    project_path: "/var/www/myapp"
+
+  tasks:
+  - name: Run SAST scan
+    command: safetyscan {{ project_path }} --mode sast
+    args:
+      chdir: "{{ project_path }}"
+    register: scan_result
+    failed_when: false
+
+  - name: Display scan result
+    debug:
+      var: scan_result.stdout_lines
+
+# Example 2: DAST scan for Node.js app
+- name: Run DAST Scan
+  hosts: webservers
+  become: yes # If become_user = root in ansible.cfg then change become: no
+
+  vars:
+    project_path: "/var/www/nodejs-app"
+    app_port: 3000
+
+  tasks:
+  - name: Run DAST scan
+    shell: |
+      safetyscan {{ project_path }} \
+        --mode dast \
+        --start "npm install && npm start" \
+        --port {{ app_port }}
+    args:
+      chdir: "{{ project_path }}"
+    register: scan_result
+    failed_when: false
+
+  - name: Display scan result
+    debug:
+      var: scan_result.stdout_lines
+
+# Example 3: Both SAST and DAST
+- name: Run Complete Scan
+  hosts: webservers
+  become: yes # If become_user = root in ansible.cfg then change become: no
+
+  vars:
+    project_path: "/var/www/webapp"
+    app_start_cmd: "npm start"
+    app_port: 3000
+
+  tasks:
+  - name: Run complete security scan
+    shell: |
+      safetyscan {{ project_path }} \
+        --mode both \
+        --start "{{ app_start_cmd }}" \
+        --port {{ app_port }}
+    args:
+      chdir: "{{ project_path }}"
+    register: scan_result
+    failed_when: false
+
+  - name: Find latest report
+    find:
+      paths: "{{ project_path }}/reports"
+      patterns: "comprehensive-security-report.html"
+      recurse: yes
+    register: report_files
+
+  - name: Display report location
+    debug:
+      msg: "Report available at: {{ report_files.files[0].path }}"
+    when: report_files.matched > 0
+
+# Example 4: Scan multiple projects
+- name: Scan Multiple Projects
+  hosts: all
+  become: yes # If become_user = root in ansible.cfg then change become: no
+
+  vars:
+    projects:
+    - path: "/var/www/app1"
+      mode: "sast"
+    - path: "/var/www/app2"
+      mode: "both"
+      start_cmd: "python app.py"
+      port: 5000
+    - path: "/opt/service"
+      mode: "dast"
+      start_cmd: "java -jar app.jar"
+      port: 8080
+
+  tasks:
+  - name: Run scans for all projects
+    shell: |
+      {% if item.mode in ['dast', 'both'] %}
+      safetyscan {{ item.path }} --mode {{ item.mode }} --start "{{ item.start_cmd }}" --port {{ item.port }}
+      {% else %}
+      safetyscan {{ item.path }} --mode {{ item.mode }}
+      {% endif %}
+    args:
+      chdir: "{{ item.path }}"
+    loop: "{{ projects }}"
+    register: scan_results
+    failed_when: false
+
+  - name: Display results
+    debug:
+      msg: "Scans completed. Check reports in each project's reports/ directory"

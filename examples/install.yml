@@ -1,0 +1,28 @@
+---
+# Example 1: Simple installation
+- name: Install SafetyScan
+  hosts: all
+  become: yes
+
+  roles:
+  - ansible-role-safetyscan
+
+# Example 2: Install without Docker (if already installed)
+- name: Install SafetyScan (Skip Docker)
+  hosts: all
+  become: yes
+
+  roles:
+  - role: ansible-role-safetyscan
+    vars:
+      safetyscan_install_docker: false
+
+# Example 3: Force reinstall
+- name: Reinstall SafetyScan
+  hosts: all
+  become: yes
+
+  roles:
+  - role: ansible-role-safetyscan
+    vars:
+      safetyscan_force_install: true

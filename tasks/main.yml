@@ -1,49 +1,38 @@
 ---
-- name: Run preflight checks
-  include_tasks: preflight.yml
-  tags:
-  - always
+- name: Check if SafetyScan is already installed
+  stat:
+    path: "{{ safetyscan_bin_dir }}/safetyscan"
+  register: safetyscan_check
+
+- name: Display installation status
+  debug:
+    msg: "SafetyScan is already installed. Skipping installation."
+  when: 
+    - safetyscan_check.stat.exists
+    - not safetyscan_force_install
 
 - name: Install Docker
   include_tasks: install-docker.yml
-  when: safetyscan_install_docker | bool
-  tags:
-  - docker
-  - install
-
-- name: Install Python
-  include_tasks: install-python.yml
-  when: safetyscan_install_python | bool
-  tags:
-  - python
-  - install
+  when: safetyscan_install_docker
+  tags: docker
 
 - name: Install SafetyScan
   include_tasks: install-safetyscan.yml
-  tags:
-  - safetyscan
-  - install
+  when: not safetyscan_check.stat.exists or safetyscan_force_install
+  tags: install
 
-- name: Run immediate scans
-  include_tasks: run-scan.yml
-  when:
-  - safetyscan_run_immediately | bool
-  - safetyscan_projects | length > 0
-  tags:
-  - scan
-  - immediate
+- name: Verify installation
+  command: "{{ safetyscan_bin_dir }}/safetyscan --help"
+  register: verify_install
+  changed_when: false
+  failed_when: verify_install.rc != 0
 
-- name: Configure scheduled scans
-  include_tasks: configure-cron.yml
-  when:
-  - safetyscan_projects | length > 0
-  - safetyscan_projects | selectattr('schedule', 'defined') | list | length > 0
-  tags:
-  - cron
-  - schedule
-
-- name: Configure notifications
-  include_tasks: configure-notifications.yml
-  when: safetyscan_enable_notifications | bool
-  tags:
-  - notifications
+- name: Display success message
+  debug:
+    msg: |
+      ✓ SafetyScan installation complete!
+      
+      Run scans with:
+        safetyscan /path/to/project --mode sast
+        safetyscan /path/to/project --mode dast --start "npm start" --port 3000
+        safetyscan /path/to/project --mode both --start "npm start" --port 3000

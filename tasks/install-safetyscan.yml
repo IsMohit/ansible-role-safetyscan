@@ -1,8 +1,14 @@
 ---
-- name: Check if SafetyScan is already installed
-  stat:
+- name: Install git
+  package:
+    name: git
+    state: present
+
+- name: Remove existing SafetyScan directory if force install
+  file:
     path: "{{ safetyscan_install_dir }}"
-  register: safetyscan_dir
+    state: absent
+  when: safetyscan_force_install
 
 - name: Clone SafetyScan repository
   git:
@@ -10,44 +16,36 @@
     dest: "{{ safetyscan_install_dir }}"
     version: "{{ safetyscan_version }}"
     force: yes
-  when: not safetyscan_dir.stat.exists or safetyscan_version != "main"
 
-- name: Update SafetyScan repository
-  git:
-    repo: "{{ safetyscan_repo_url }}"
-    dest: "{{ safetyscan_install_dir }}"
-    version: "{{ safetyscan_version }}"
-    update: yes
-  when: safetyscan_dir.stat.exists
-
-- name: Make SafetyScan scripts executable
+- name: Make scripts executable
   file:
     path: "{{ safetyscan_install_dir }}/{{ item }}"
     mode: '0755'
   loop:
-  - safetyscan.sh
-  - report_generator.py
+    - safetyscan.sh
+    - report_generator.py
 
-- name: Copy safetyscan.sh to bin directory
+- name: Copy safetyscan to bin directory
   copy:
     src: "{{ safetyscan_install_dir }}/safetyscan.sh"
     dest: "{{ safetyscan_bin_dir }}/safetyscan"
     mode: '0755'
     remote_src: yes
 
-- name: Copy report_generator.py to bin directory
+- name: Copy report generator to bin directory (optional)
   copy:
     src: "{{ safetyscan_install_dir }}/report_generator.py"
     dest: "{{ safetyscan_bin_dir }}/safetyscan-report-generator"
     mode: '0755'
     remote_src: yes
+  failed_when: false
 
-- name: Verify SafetyScan installation
-  command: "{{ safetyscan_bin_dir }}/safetyscan --help"
-  register: safetyscan_help
+- name: Check if Python 3 is available (for comprehensive reports)
+  command: python3 --version
+  register: python_check
   changed_when: false
-  failed_when: safetyscan_help.rc != 0
+  failed_when: false
 
-- name: Display SafetyScan installation success
+- name: Display Python status
   debug:
-    msg: "SafetyScan successfully installed at {{ safetyscan_bin_dir }}/safetyscan"
+    msg: "{{ 'Python 3 available - comprehensive reports will work' if python_check.rc == 0 else 'Python 3 not found - only basic reports will be generated' }}"
