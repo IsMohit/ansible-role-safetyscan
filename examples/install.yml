@@ -5,7 +5,7 @@
   become: yes
 
   roles:
-  - ansible-role-safetyscan
+  - IsMohit.safetyscan
 
 # Example 2: Install without Docker (if already installed)
 - name: Install SafetyScan (Skip Docker)
@@ -23,6 +23,6 @@
   become: yes
 
   roles:
-  - role: ansible-role-safetyscan
+  - role: IsMohit.safetyscan
     vars:
       safetyscan_force_install: true
