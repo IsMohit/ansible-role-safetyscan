@@ -2,7 +2,7 @@
 
 # Ansible Role: SafetyScan
 
-[![Ansible Galaxy](https://img.shields.io/badge/galaxy-yourusername.safetyscan-blue.svg)](https://galaxy.ansible.com/yourusername/safetyscan)
+[![Ansible Galaxy](https://img.shields.io/badge/galaxy-yourusername.safetyscan-blue.svg)](https://galaxy.ansible.com/ui/standalone/roles/IsMohit/safetyscan/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 **Simple Ansible role to install SafetyScan security scanning tool**
