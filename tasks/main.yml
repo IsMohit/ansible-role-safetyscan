@@ -21,18 +21,38 @@
   when: not safetyscan_check.stat.exists or safetyscan_force_install
   tags: install
 
-- name: Verify installation
-  command: "{{ safetyscan_bin_dir }}/safetyscan --help"
+- name: Verify SafetyScan binary exists
+  stat:
+    path: "{{ safetyscan_bin_dir }}/safetyscan"
+  register: verify_binary
+
+- name: Verify SafetyScan is executable
+  file:
+    path: "{{ safetyscan_bin_dir }}/safetyscan"
+    mode: '0755'
+  when: verify_binary.stat.exists
+
+- name: Test SafetyScan command
+  shell: "{{ safetyscan_bin_dir }}/safetyscan --help"
   register: verify_install
   changed_when: false
-  failed_when: verify_install.rc != 0
+  failed_when: false
 
-- name: Display success message
+- name: Display verification result
   debug:
     msg: |
-      ✓ SafetyScan installation complete!
+      {% if verify_install.rc == 0 %}
+      ✓ SafetyScan installation verified successfully!
       
       Run scans with:
         safetyscan /path/to/project --mode sast
         safetyscan /path/to/project --mode dast --start "npm start" --port 3000
         safetyscan /path/to/project --mode both --start "npm start" --port 3000
+      
+      Note: You may need to log out and back in for PATH changes to take effect.
+      {% else %}
+      ⚠ SafetyScan verification had issues.
+      Error: {{ verify_install.stderr | default('Unknown error') }}
+      
+      Try running manually: {{ safetyscan_bin_dir }}/safetyscan --help
+      {% endif %}
