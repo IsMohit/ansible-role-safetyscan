@@ -307,3 +307,176 @@ safetyscan --help
 ### Issue: Docker not installed or not working
 
 **Symptoms:**
+[safetyscan] ✗ Docker build failed!
+
+**Common Causes & Solutions:**
+
+1. **Missing or invalid dependencies file:**
+```bash
+   # Check if your project has:
+   ls -la package.json      # Node.js
+   ls -la requirements.txt  # Python
+   ls -la pom.xml          # Java
+```
+
+2. **Network issues:**
+```bash
+   # Test Docker network
+   docker pull node:18
+```
+
+3. **Insufficient disk space:**
+```bash
+   df -h
+   docker system df
+   
+   # Clean up if needed
+   docker system prune -a
+```
+
+4. **Test build manually:**
+```bash
+   cd /path/to/your/project
+   docker build -t test .
+```
+
+---
+
+### Issue: Permission denied
+
+**Symptoms:**
+Permission denied while trying to connect to the Docker daemon socket
+
+**Solution:**
+```bash
+# Add your user to docker group
+sudo usermod -aG docker $USER
+
+# IMPORTANT: Log out and log back in, or run:
+newgrp docker
+
+# Test
+docker ps
+```
+
+---
+
+### Issue: Role installation fails
+
+**Check Ansible version:**
+```bash
+ansible --version  # Should be 2.9+
+```
+
+**Check network connectivity:**
+```bash
+# Can you reach GitHub?
+ping github.com
+
+# Can you reach Docker repos?
+ping download.docker.com
+```
+
+**Run with verbose mode:**
+```bash
+ansible-playbook -i inventory install.yml -vvv
+```
+
+---
+
+## 🧪 Testing
+
+### Test Installation
+```bash
+# Create test playbook
+cat > test.yml <<'EOF'
+---
+- hosts: localhost
+  become: yes
+  roles:
+    - ansible-role-safetyscan
+EOF
+
+# Run it
+ansible-playbook test.yml
+```
+
+### Verify Installation
+```bash
+# Check binary exists
+ls -la /usr/local/bin/safetyscan
+
+# Test command
+safetyscan --help
+
+# Test Docker
+docker --version
+docker ps
+
+# Check logs (if any issues)
+journalctl -u docker -n 50
+```
+
+---
+
+## 📖 Additional Resources
+
+### SafetyScan Documentation
+- [SafetyScan GitHub](https://github.com/IsMohit/SafetyScan-Automated-Security-Scanning-Tool-for-Linux)
+- [SafetyScan README](https://github.com/IsMohit/SafetyScan-Automated-Security-Scanning-Tool-for-Linux/blob/main/README.md)
+
+### Ansible Resources
+- [Ansible Best Practices](https://docs.ansible.com/ansible/latest/user_guide/playbooks_best_practices.html)
+- [Ansible Galaxy](https://galaxy.ansible.com/)
+
+### Docker Resources
+- [Docker Installation](https://docs.docker.com/engine/install/)
+- [Docker Security](https://docs.docker.com/engine/security/)
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome!
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Commit changes: `git commit -m 'Add amazing feature'`
+4. Push to branch: `git push origin feature/amazing-feature`
+5. Open a Pull Request
+
+
+## 👤 Author
+
+**Mohit Khambekar**
+
+- GitHub: [@IsMohit](https://github.com/IsMohit)
+- SafetyScan: [Project Link](https://github.com/IsMohit/SafetyScan-Automated-Security-Scanning-Tool-for-Linux)
+
+---
+
+## 🙏 Acknowledgments
+
+- **SafetyScan** - The security scanning tool this role installs
+- **Semgrep** - SAST engine
+- **OWASP ZAP** - DAST engine
+- **Docker** - Containerization platform
+- **Ansible Community** - For excellent tooling and documentation
+
+---
+
+## ⭐ Support
+
+If this role helped you, please:
+- ⭐ Star the repository
+- 🐛 Report issues on [GitHub Issues](https://github.com/IsMohit/ansible-role-safetyscan/issues)
+- 📖 Improve documentation via Pull Requests
+- 📢 Share with others who might find it useful
+
+---
+
+<div align="center">
+
+[⬆ Back to Top](#ansible-role-safetyscan)
+
+</div>
