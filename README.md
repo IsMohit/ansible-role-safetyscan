@@ -51,19 +51,19 @@ This Ansible role automates the installation of [SafetyScan](https://github.com/
 
 ### From Ansible Galaxy (Recommended)
 ```bash
-ansible-galaxy install yourusername.safetyscan
+ansible-galaxy install IsMohit.safetyscan
 ```
 
 ### From GitHub
 ```bash
-ansible-galaxy install git+https://github.com/yourusername/ansible-role-safetyscan.git
+ansible-galaxy install git+https://github.com/IsMohit/ansible-role-safetyscan.git
 ```
 
 ### Using requirements.yml
 ```yaml
 # requirements.yml
 roles:
-  - name: yourusername.safetyscan
+  - name: IsMohit.safetyscan
     version: 1.0.0
 ```
 ```bash
@@ -92,7 +92,7 @@ All variables have sensible defaults. Override them as needed.
 - hosts: servers
   become: yes
   roles:
-    - role: ansible-role-safetyscan
+    - role: IsMohit.safetyscan
       vars:
         safetyscan_version: "v1.0.0"  # Install specific version
         safetyscan_install_docker: false  # Skip Docker if already installed
@@ -112,7 +112,7 @@ All variables have sensible defaults. Override them as needed.
   hosts: all
   become: yes
   roles:
-    - ansible-role-safetyscan
+    - IsMohit.safetyscan
 ```
 ```bash
 ansible-playbook -i inventory install.yml
@@ -144,7 +144,7 @@ ansible-playbook -i inventory scan.yml
   hosts: all
   become: yes
   roles:
-    - ansible-role-safetyscan
+    - IsMohit.safetyscan
 ```
 
 ### Example 2: Skip Docker Installation
@@ -156,7 +156,7 @@ If Docker is already installed on your systems:
   hosts: all
   become: yes
   roles:
-    - role: ansible-role-safetyscan
+    - role: IsMohit.safetyscan
       vars:
         safetyscan_install_docker: false
 ```
@@ -170,7 +170,7 @@ Update to the latest version:
   hosts: all
   become: yes
   roles:
-    - role: ansible-role-safetyscan
+    - role: IsMohit.safetyscan
       vars:
         safetyscan_force_install: true
 ```
@@ -182,7 +182,7 @@ Update to the latest version:
   hosts: all
   become: yes
   roles:
-    - role: ansible-role-safetyscan
+    - role: IsMohit.safetyscan
       vars:
         safetyscan_version: "v1.0.0"
 ```
@@ -394,7 +394,7 @@ cat > test.yml <<'EOF'
 - hosts: localhost
   become: yes
   roles:
-    - ansible-role-safetyscan
+    - IsMohit.safetyscan
 EOF
 
 # Run it
